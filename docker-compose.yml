@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  requirements:
+    image: python_api
+    volumes:
+      - ./:/usr/docker_practice_on_python #work
+      - .//:/docker_practice_on_python #working variant this line for saving html report file
+    command: bash -c "
+      pip install pytest-html
+      && py.test --html=demoreport.html
+      "
