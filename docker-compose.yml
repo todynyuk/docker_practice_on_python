@@ -1,12 +1,47 @@
-version: '3'
-
+version: '3.8'
 services:
-  requirements:
-    image: python_api
+
+  selenoid:
+    network_mode: bridge
+    container_name: selenoid
+    image: "aerokube/selenoid:latest"
+    ports:
+      - "4445:4444"
     volumes:
-      - ./:/usr/docker_practice_on_python #work
-      - .//:/docker_practice_on_python #working variant this line for saving html report file
-    command: bash -c "
-      pip install pytest-html
-      && py.test --html=demoreport.html
-      "
+      - "/Users/tarasodynyuk/Documents/docker_practice_on_python/:/etc/selenoid"
+      - "/Users/tarasodynyuk/Documents/docker_practice_on_python/video:/opt/selenoid/video"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - OVERRIDE_VIDEO_OUTPUT_DIR=/Users/tarasodynyuk/Documents/docker_practice_on_python/video
+    command: [ "-conf", "/etc/selenoid/browsers.json", "-video-output-dir", "/opt/selenoid/video" ]
+
+  selenoid-ui:
+    network_mode: bridge
+    container_name: selenoid-ui
+    image: "aerokube/selenoid-ui:latest"
+    ports:
+      - "8090:8080"
+    links:
+      - selenoid
+    command:
+      [ "--selenoid-uri", "http://selenoid:4444" ]
+
+  ggr:
+    image: "aerokube/ggr:latest"
+    container_name: ggr
+    network_mode: bridge
+    ports:
+      - "4444:4444"
+    volumes:
+      - "/etc/grid-router/:/etc/grid-router:ro"
+    restart: always
+
+  ggr-ui:
+    image: 'aerokube/ggr-ui:latest'
+    container_name: ggr-ui
+    network_mode: bridge
+    ports:
+      - '8888:8888'
+    volumes:
+      - '/etc/grid-router/quota:/etc/grid-router/quota:ro'
+    restart: always
